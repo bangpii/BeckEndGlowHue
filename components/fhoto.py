@@ -7,6 +7,10 @@ from components.skin_tone import change_skin_tone
 foto_bp = Blueprint("foto", __name__)
 user_sessions = {}
 
+def get_base_url():
+    """Get base URL dynamic untuk production"""
+    return "https://web-production-480f.up.railway.app"
+
 @foto_bp.route("/upload", methods=["POST"])
 def upload_file():
     print("=== UPLOAD ENDPOINT HIT ===")
@@ -55,10 +59,13 @@ def upload_file():
     
     print(f"Session created: {session_id}")
     
+    # Gunakan base URL production
+    base_url = get_base_url()
+    
     return jsonify({
         "session_id": session_id,
         "filename": file.filename,
-        "url": f"http://localhost:5000/uploads/{original_filename}"
+        "url": f"{base_url}/uploads/{original_filename}"
     }), 200
 
 @foto_bp.route("/apply_color", methods=["POST"])
@@ -123,8 +130,9 @@ def apply_color():
             os.remove(temp_original)
             print("Temp file cleaned up")
         
-        # Generate URL dengan timestamp untuk cache busting
-        result_url = f"http://localhost:5000/uploads/{os.path.basename(output_path)}?t={uuid.uuid4().hex[:8]}"
+        # Gunakan base URL production dengan cache busting
+        base_url = get_base_url()
+        result_url = f"{base_url}/uploads/{os.path.basename(output_path)}?t={uuid.uuid4().hex[:8]}"
         print(f"Result URL: {result_url}")
             
         return jsonify({
@@ -157,7 +165,9 @@ def reset_color():
     original_path = user_sessions[session_id]["original"]
     user_sessions[session_id]["current"] = original_path
     
-    original_url = f"http://localhost:5000/uploads/{os.path.basename(original_path)}?t={uuid.uuid4().hex[:8]}"
+    # Gunakan base URL production
+    base_url = get_base_url()
+    original_url = f"{base_url}/uploads/{os.path.basename(original_path)}?t={uuid.uuid4().hex[:8]}"
     
     return jsonify({
         "success": True,
